@@ -1,0 +1,169 @@
+﻿@page "/customer/index"
+@using BlazorApp8.Shared
+@inject HttpClient Http
+
+
+<PageTitle>Customers</PageTitle>
+
+<h1>Customers</h1>
+
+@if (customers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row" style="padding:2em;">
+        <div class="col-md-6">
+            @if (!expand)
+            {
+                <button @onclick="expandall">expand all</button>
+            }
+            else
+            {
+                <button @onclick="expandall">collapse all</button>
+            }
+        </div>
+        <div class="col-md-6">
+            <form action="" method="get" class="form-example" @onsubmit="Search">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label for="name"></label>
+                        <input @bind="keyword" type="text" name="name" id="name" required placeholder="Search by firstname">
+                    </div>
+                    <div class="col-md-3">
+                        <input class="btn btn-primary" type="submit" value="Search">
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-primary" @onclick="OnInitializedAsync">Refresh</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <table id="dtBasicExample" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>
+                    </th>
+                    <th>Id</th>
+                    <th class="th-sm">
+                        First name
+                        <button @onclick="SortFirstName">Sort</button>
+                    </th>
+                    <th class="th-sm">Last name</th>
+                    <th class="th-sm">Email</th>
+                    <th class="th-sm">Age</th>
+                    <th class="th-sm">Date de naissance</th>
+                    <th class="th-sm">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in customers)
+                {
+                    <tr>
+                        <td>
+                            @if (customer.Products != null)
+                            {
+                                <button @onclick="() => Expand(customer.Id)">+</button>
+                            }
+                        </td>
+                        <td>@customer.Id</td>
+                        <td>@customer.FirstName</td>
+                        <td>@customer.LastName</td>
+                        <td>@customer.Email</td>
+                        <td>@customer.age</td>
+                        <td>@customer.DateNaissance.ToShortDateString()</td>
+                        <td>
+                            @*<button type="button" class="btn btn-danger">X</button>*@
+                            <a href="customer/@customer.Id">Détails</a>
+                        </td>
+                    </tr>
+                    @if ((customer.Products != null && expand) || (dict.ContainsKey(customer.Id) && dict[customer.Id]))
+                    {
+                        @foreach (var product in customer.Products)
+                        {
+                            <tr>
+                                <td>
+                                </td>
+                                <td></td>
+                                <td>@product.Name</td>
+                                <td>@product.Description</td>
+                                <td>@product.Price</td>
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private Customer[]? customers;
+    private bool sort = false;
+    private bool asc;
+    private bool expand = false;
+    private string keyword;
+    private IDictionary<int, bool> dict = new Dictionary<int, bool>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await Http.GetFromJsonAsync<Customer[]>("Customer");
+    }
+
+    private void SortFirstName()
+    {
+        if (sort)
+        {
+            if (asc)
+            {
+                var query = from p in customers orderby p.FirstName descending select p;
+                customers = query.ToArray();
+                asc = false;
+            }
+            else
+            {
+                var query = from p in customers orderby p.FirstName select p;
+                customers = query.ToArray();
+                asc = true;
+            }
+        }
+        else
+        {
+            var query = from p in customers orderby p.FirstName select p;
+            customers = query.ToArray();
+            asc = true;
+            sort = true;
+        }
+
+    }
+
+    private void Expand(int Id)
+    {
+        if (!dict.ContainsKey(Id))
+        {
+            dict.Add(Id, true);
+        }
+        else
+        {
+            dict[Id] = !dict[Id];
+        }
+
+    }
+    private void expandall()
+    {
+        expand = !expand;
+    }
+
+    private void Search()
+    {
+        //var query = customers.Where(_ => _.FirstName == keyword);
+        var query = from c in customers where c.FirstName == keyword select c;
+        customers = query.ToArray();
+    }
+
+}
