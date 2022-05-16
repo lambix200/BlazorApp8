@@ -29,14 +29,14 @@ namespace BlazorApp8.Server.Controllers
         [HttpGet]
         public IEnumerable<Customer> Get()
         {
-            //for (int i = 0; i < 1; i++)
+            //for (int i = 0; i < 300; i++)
             //{
             //    Product product = new Product
             //    {
             //        Description = Faker.TextFaker.Sentences(3),
             //        Name = Faker.StringFaker.Alpha(6),
             //        Price = Faker.NumberFaker.Number(6, 6000),
-
+            //        CustomerId = Faker.NumberFaker.Number(2,100)
             //    };
             //    _context.Product.Add(product);
             //    _context.SaveChanges();
@@ -46,6 +46,17 @@ namespace BlazorApp8.Server.Controllers
             var x = _mapper.Map<IEnumerable<Customer>>(_context.Customer);
             return x.ToArray();
         }
+
+        
+        // GET: Customers/Details/5
+        [HttpGet("{id}")]
+        public Customer Get(int id)
+        {
+            _context.Customer.Include(_ => _.Products).ToList();
+            var cus = _context.Customer.FirstOrDefault(_ => _.Id == id);
+            return cus;
+        }
+
 
 
         //private async void MakeBase()
