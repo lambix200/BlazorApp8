@@ -49,7 +49,7 @@ namespace BlazorApp8.Server.Controllers
         }
 
         
-        // GET: Customers/Details/5
+        // GET: Customers/5
         [HttpGet("{id}")]
         public Customer Get(int id)
         {
@@ -58,7 +58,18 @@ namespace BlazorApp8.Server.Controllers
             return cus;
         }
 
-
+        // GET: Customers/Delete/5
+        [HttpDelete("{id}")]
+        public int Delete(int id)
+        {
+            var obj = _context.Customer.FirstOrDefault(_ => _.Id == id);
+            if (obj != null)
+            {
+                _context.Customer.Remove(obj);
+                return _context.SaveChanges();
+            }
+            return 0; 
+        }
 
         //private async void MakeBase()
         //{

@@ -2,12 +2,20 @@
 @using BlazorApp8.Shared
 @inject HttpClient Http
 @inject DialogService DialogService
+@inject NavigationManager _nav
 
 
 
 <PageTitle>Customers</PageTitle>
+<div class="row">
+    <div class="col-md-6">
+        <h1>Customers</h1>
+    </div>
+    <div class="col-md-6" style="text-align:right; margin-right:2em;">
+        <RadzenButton @onclick="@(()=>_nav.NavigateTo("customer/create"))" Text="Add" ButtonStyle="ButtonStyle.Success" />
+    </div>
+</div>
 
-<h1>Customers</h1>
 
 @if (customers == null)
 {
@@ -33,48 +41,25 @@ else
                 </RadzenDataGrid>
             </Template>
             <Columns>
-                <RadzenDataGridColumn Width="60px" TItem="Customer" Property="Id" Title="ID" Filterable="false" Groupable="false" Frozen="true" Resizable="false" Reorderable="false" Pickable="false"/>
+                <RadzenDataGridColumn Width="60px" TItem="Customer" Property="Id" Title="ID" Filterable="false" Groupable="false" Frozen="true" Resizable="false" Reorderable="false" Pickable="false" />
                 <RadzenDataGridColumn TItem="Customer" Property="FirstName" Title="First Name" Groupable="false" />
                 <RadzenDataGridColumn TItem="Customer" Property="LastName" Title="Last Name" />
                 <RadzenDataGridColumn TItem="Customer" Property="Email" Title="Email" Groupable="false" />
                 <RadzenDataGridColumn TItem="Customer" Property="DateNaissance" Title="Date de naissance" FilterProperty="Customer.DateNaissance" Groupable="false" />
-                <RadzenDataGridColumn TItem="Customer" Title="Action" Filterable="false" Sortable="false" Groupable="false">    
+                <RadzenDataGridColumn TItem="Customer" Title="Action" Filterable="false" Sortable="false" Groupable="false">
                     <Template Context="customer">
-                        @*<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal"
-                            Click=@(() => Delete(customer.Id)) data-bs-whatever="@(customer.Id)">
-                            X
-                            </button>*@
-                            <button type="button" class="btn btn-danger" Click=@(() => Delete(customer.Id))>
-                            X
-                            </button>
+                        @*<RadzenButton Text="X" ButtonStyle="ButtonStyle.Danger" Click=@(() => Delete(customer.Id)) />*@
+                        <RadzenButton Icon="delete" Size="ButtonSize.Medium" Click="@(() => DeleteModal(customer.Id))" @onclick:stopPropagation="true" />
                         <RadzenButton Text="view" ButtonStyle="ButtonStyle.Secondary" Click=@(() => ViewDetail(customer.Id)) />
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalLabel">Delete</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Are you sure to delete this customer ?
-                        <input type="text" class="form-control" id="recipient-name">
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-danger" id="btnSaveIt">Yes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 }
 
 @code {
-    private Customer[]? customers;
+    private List<Customer>? customers;
     private bool sort = false;
     private bool asc;
     private bool expand = false;
@@ -86,7 +71,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        customers = await Http.GetFromJsonAsync<Customer[]>("Customer");
+        customers = await Http.GetFromJsonAsync<List<Customer>>("Customer");
     }
 
     private void SortFirstName()
@@ -96,20 +81,20 @@ else
             if (asc)
             {
                 var query = from p in customers orderby p.FirstName descending select p;
-                customers = query.ToArray();
+                customers = query.ToList();
                 asc = false;
             }
             else
             {
                 var query = from p in customers orderby p.FirstName select p;
-                customers = query.ToArray();
+                customers = query.ToList();
                 asc = true;
             }
         }
         else
         {
             var query = from p in customers orderby p.FirstName select p;
-            customers = query.ToArray();
+            customers = query.ToList();
             asc = true;
             sort = true;
         }
@@ -118,12 +103,34 @@ else
 
     void RowRender(RowRenderEventArgs<Customer> args)
     {
-        args.Expandable = args.Data.Products.Count() > 0 ;
+        args.Expandable = args.Data.Products.Count() > 0;
     }
 
-    private void Delete(int Id)
-    {
+    //private async Task Delete(int id)
+    //{
+    //    using (var msg = await Http.DeleteAsync($"customer/{id}"))
+    //    {
+    //        if (msg.IsSuccessStatusCode)
+    //        {
+    //            customers = await Http.GetFromJsonAsync<List<Customer>>("Customer");
+    //        }
+    //    }
+    //}
 
+    private async Task DeleteModal(int id)
+    {
+        var confirmResult = await DialogService.Confirm(
+        "Delete", "Are you sure");
+        if (confirmResult.HasValue && confirmResult.Value)
+        {
+            using (var msg = await Http.DeleteAsync($"customer/{id}"))
+            {
+                if (msg.IsSuccessStatusCode)
+                {
+                    customers = await Http.GetFromJsonAsync<List<Customer>>("Customer");
+                }
+            }
+        }
     }
 
     async Task ViewDetail(int CustomerId)
@@ -154,7 +161,7 @@ else
     {
         //var query = customers.Where(_ => _.FirstName == keyword);
         var query = from c in customers where c.FirstName == keyword select c;
-        customers = query.ToArray();
+        customers = query.ToList();
     }
 
 }
