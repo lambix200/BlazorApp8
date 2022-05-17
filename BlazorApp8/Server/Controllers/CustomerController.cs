@@ -71,6 +71,14 @@ namespace BlazorApp8.Server.Controllers
             return 0; 
         }
 
+        [HttpPost]
+        public async Task<Customer> Post([FromBody] Customer create)
+        {
+            EntityEntry<Customer> cust = await _context.Customer.AddAsync(create);
+            await _context.SaveChangesAsync();
+            return cust.Entity;
+        }
+
         //private async void MakeBase()
         //{
         //    for (int i = 0; i < 100; i++)
