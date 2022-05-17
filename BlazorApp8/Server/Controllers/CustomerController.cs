@@ -41,6 +41,7 @@ namespace BlazorApp8.Server.Controllers
             //    _context.Product.Add(product);
             //    _context.SaveChanges();
             //}
+         
 
             _context.Customer.Include(_ => _.Products).ToList();
             var x = _mapper.Map<IEnumerable<Customer>>(_context.Customer);
