@@ -50,6 +50,7 @@ else
                     </div>
                     <div class="col-md-3">
                         <RadzenNumeric style="width: 100%;" Name="Age" @bind-Value="cust.age" />
+                        @*<RadzenSlider @bind-Value=@cust.age TValue="int?" Min="0" Max="100" Class="w-100" />*@
                     </div>
                     <div class="align-items-center d-flex col-md-2">
                         <RadzenLabel Text="Telephone" />
@@ -63,7 +64,7 @@ else
                         <RadzenLabel Text="Date de naissance" />
                     </div>
                     <div class="col-md-3">
-                        <RadzenDatePicker style="width: 100%;" Name="OrderDate" @bind-Value="cust.DateNaissance" DateFormat="d" />
+                        <RadzenDatePicker style="width: 100%;" Name="OrderDate" @bind-Value="cust.DateNaissance" DateFormat="d" Class="w-100"/>
                     </div>
                 </div>
             </RadzenFieldset>

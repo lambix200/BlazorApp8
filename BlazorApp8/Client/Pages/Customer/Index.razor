@@ -13,14 +13,17 @@
     </div>
     <div class="col-md-6" style="text-align:right;">
         <RadzenButton Click="@(()=>_nav.NavigateTo("/customer/create"))" Text="Add" ButtonStyle="ButtonStyle.Success" Style="margin-right:4em;"/>
-        <a href="/customer/create">ajouter</a>
+        @*<a href="/customer/create">ajouter</a>*@
     </div>
 </div>
 
 
 @if (customers == null)
 {
-    <p><em>Loading...</em></p>
+    <div>
+        <div class="spinner-border" role="status"></div>
+        loading...
+    </div>
 }
 else
 {
